@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Dugesia Tigrina</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <script src="main.js"></script>
+  </head>
+  <body>
+    <div class="point">o</div>
+
+    <button class="stop-button">stop</button>
+  </body>
+  <style>
+    .point {
+      color: red;
+      left: 0;
+      position: absolute;
+      top: 0;
+    }
+  </style>
+  <script>
+    const point = document.querySelector(".point");
+    // let matrix = [[0], [0, 1]];
+    const PACE = 20;
+
+    const WINDOW_WIDTH = window.innerWidth;
+    const WINDOW_HEIGHT = window.innerHeight;
+
+    const X_AXIS_ALIGN_FACTOR = 10;
+    const Y_AXIS_ALIGN_FACTOR = 20;
+
+    let X_AXIS_POSITION = 0;
+    let Y_AXIS_POSITION = 0;
+    let hasPositiveXDirection = true;
+    let hasPositiveYDirection = true;
+
+    let atRest = false;
+
+    // this code is weird
+    // const setMatrix = axis => {
+    //   let i;
+    //   for (i = 0; i <= 20; i++) {
+    //     matrix[axis].push(Math.floor(WINDOW_WIDTH / i));
+    //   }
+    //   return matrix;
+    // };
+
+    // TODO: make dugesia stop at certain points, currently is just bouncing off the walls
+    //terrain boundaries
+    const isWithinRightBoundaries = currentPosition =>
+      currentPosition + PACE < WINDOW_WIDTH;
+
+    const isWithinLeftBoundaries = currentPosition =>
+      currentPosition + PACE > 0;
+
+    const isWithinTopBoundaries = currentPosition => currentPosition + PACE > 0;
+
+    const isWithinBottomBoundaries = currentPosition =>
+      currentPosition + PACE < WINDOW_HEIGHT;
+
+    //movement
+    const isMovingRight = () => {
+      const randomizeMovement = Math.floor(Math.random() * Math.floor(2));
+
+      return (hasPositiveXDirection = randomizeMovement === 1);
+    };
+
+    const isMovingBottom = () => {
+      const randomizeMovement = Math.floor(Math.random() * Math.floor(2));
+
+      return (hasPositiveYDirection = randomizeMovement === 1);
+    };
+
+    // TODO: use the time here
+    const setDirection = () => {
+      const time = Math.floor(Math.random() * 10) * 100;
+      setTimeout(() => isMovingRight(), 4000);
+      setTimeout(() => isMovingBottom(), 4000);
+      console.log("changing direction");
+    };
+
+    // X movement
+    const moveAccrossXAxis = () => {
+      let position;
+
+      if (hasPositiveXDirection) {
+        position = isWithinRightBoundaries(X_AXIS_POSITION)
+          ? (X_AXIS_POSITION += PACE)
+          : WINDOW_WIDTH - X_AXIS_ALIGN_FACTOR;
+      } else {
+        position =
+          isWithinLeftBoundaries(X_AXIS_POSITION) && X_AXIS_POSITION !== 0
+            ? (X_AXIS_POSITION -= PACE)
+            : 0;
+      }
+      console.log(position, "X");
+      return (point.style.left = `${position}px`);
+    };
+
+    // Y movement
+    const moveAccrossYAxis = () => {
+      let position;
+
+      if (hasPositiveYDirection) {
+        position = isWithinBottomBoundaries(Y_AXIS_POSITION)
+          ? (Y_AXIS_POSITION += PACE)
+          : WINDOW_HEIGHT - Y_AXIS_ALIGN_FACTOR;
+      } else {
+        position =
+          isWithinTopBoundaries(Y_AXIS_POSITION) && Y_AXIS_POSITION !== 0
+            ? (Y_AXIS_POSITION -= PACE)
+            : 0;
+      }
+      console.log(position, "Y");
+      return (point.style.top = `${position}px`);
+    };
+
+    const move = () => {
+      moveAccrossXAxis();
+      moveAccrossYAxis();
+    };
+
+    // start Dugesia
+    const handleDugesia = () => {
+      // TODO: set current time and past time to compare seconds and let dugesia know when she should move
+      // setInterval(() => console.log(Math.floor(Date.now() / 1000)), 1000);
+      const pastTime = Math.floor(Date.now() / 1000);
+      const moves = setInterval(move, 1000);
+      const dugesiaIsResting = true;
+
+      //Handle rest
+      // TODO: this part has to redone, don't know if add timeout here or inside a function
+      const randomTime = Math.floor(Math.random() * 10) * 100;
+      setInterval(() => (atRest = !atRest), randomTime);
+
+      // console.log(Math.floor(Math.random() * 10), pastTime);
+      console.log(atRest);
+      // TODO: this logic is the part that decides weather it should rest or it should move, extend this logic further from the TODOs above
+      if (atRest) {
+        return clearInterval(moves);
+      } else {
+        return setInterval(move, 1000);
+      }
+      //This section is meant for function that must run
+      setInterval(setDirection, 4000);
+    };
+
+    const startDugesia = handleDugesia();
+    startDugesia;
+    document
+      .getElementsByClassName("stop-button")[0]
+      .addEventListener("click", event => clearInterval(startDugesia));
+  </script>
+</html>
+
+<!-- const move = () => { setInterval(setDirection, 4000);
+setInterval(moveAccrossXAxis, 1000); setInterval(moveAccrossYAxis, 1000); }; //
+start Dugesia //move shouldn't be here this is just for initialization
+processes, this code needs to change moving forward move(); document
+.getElementsByClassName("stop-button")[0] .addEventListener("click", event =>
+clearInterval(moveX)); -->
