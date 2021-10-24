@@ -1,3 +1,10 @@
+
+
+
+<!-- WARNING  // warning deprecated code -->
+
+
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -6,7 +13,6 @@
     <title>Dugesia Tigrina</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
-    <script src="main.js"></script>
   </head>
   <body>
     <div class="point">o</div>
@@ -120,7 +126,7 @@
 
     const move = () => {
       moveAccrossXAxis();
-      moveAccrossYAxis();
+      // moveAccrossYAxis();
     };
 
     // start Dugesia
@@ -129,22 +135,18 @@
       // setInterval(() => console.log(Math.floor(Date.now() / 1000)), 1000);
       const pastTime = Math.floor(Date.now() / 1000);
       const moves = setInterval(move, 1000);
-      const dugesiaIsResting = true;
+      // const dugesiaIsResting = true; //currently not used
 
-      //Handle rest
+      // Resting logic
       // TODO: this part has to redone, don't know if add timeout here or inside a function
-      const randomTime = Math.floor(Math.random() * 10) * 100;
-      setInterval(() => (atRest = !atRest), randomTime);
+      // const randomTime = Math.floor(Math.random() * 10) * 100;
+      // setInterval(() => (atRest = !atRest), randomTime);
+      // if (atRest) {
+      //   return clearInterval(moves);
+      // } else {
+      //   return setInterval(move, 1000);
+      // }
 
-      // console.log(Math.floor(Math.random() * 10), pastTime);
-      console.log(atRest);
-      // TODO: this logic is the part that decides weather it should rest or it should move, extend this logic further from the TODOs above
-      if (atRest) {
-        return clearInterval(moves);
-      } else {
-        return setInterval(move, 1000);
-      }
-      //This section is meant for function that must run
       setInterval(setDirection, 4000);
     };
 

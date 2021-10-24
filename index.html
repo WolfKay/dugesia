@@ -1,112 +1,213 @@
+<!-- TODO: ADD DUGESIAS INTERACTION WITH FOOD. -->
+
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Dugesia Tigrina</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" type="text/css" media="screen" />
-    <!-- <script src="main.js"></script> -->
-  </head>
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <title>Dugesia Tigrina</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" type="text/css" media="screen" />
+        <!-- <script src="main.js"></script> -->
+    </head>
 
-  <body>
-    <div class="board">
-      <div class="point">o</div>
-    </div>
-  </body>
-  <style>
-    .point {
-      color: red;
-      left: 18;
-      position: absolute;
-      top: 0;
-    }
+    <body>
+        <div class="board">
+            <div id="point" class="point">o</div>
+        </div>
+    </body>
+    <style>
+        #point {
+            color: red;
+            left: 18;
+            position: absolute;
+            top: 0;
+        }
 
-    .board {
-      border: 1px solid red;
-    }
-  </style>
-  <script>
-        const point = document.querySelector(".point");
+        .food {
+            color: green;
+            position: absolute;
+        }
 
+        .board {
+            border: 1px solid red;
+        }
+    </style>
+    <script>
+        const point = document.querySelector('.point');
+        const food = document.querySelector('.food');
+
+        let history = [];
         let ENERGY = 6;
-        const EFFORT = 2;
         let MOVEMENT_COUNT = 0;
+        let isTired = false;
+        let DIRECTION = 'right';
+        let restingTime = 0;
 
+        const EFFORT = 2;
         const PACE = 150;
-        let DIRECTION = "right";
-
         const WINDOW_BORDER = 18;
-        const WINDOW_WIDTH = document.documentElement.clientWidth - WINDOW_BORDER;
-        const WINDOW_HEIGHT = document.documentElement.clientHeight - WINDOW_BORDER;
+        const WINDOW_WIDTH =
+            document.documentElement.clientWidth - WINDOW_BORDER;
+        const WINDOW_HEIGHT =
+            document.documentElement.clientHeight - WINDOW_BORDER;
+        const ENV_CONDITIONS = {
+            // Harsh.
+            0: 4,
+            // Good.
+            1: 8,
+            // Rich.
+            2: 12,
+        };
 
         // initialize board IFFE
         (() => {
-          let board = document.getElementsByClassName("board");
+            let board = document.getElementsByClassName('board');
 
-          board[0].style.height = WINDOW_HEIGHT + "px";
-          board[0].style.width = WINDOW_WIDTH + "px";
+            board[0].style.height = WINDOW_HEIGHT + 'px';
+            board[0].style.width = WINDOW_WIDTH + 'px';
         })();
 
+        // Use history to get last movements and take an action based on them so Dugesia's movements will be more natural.
+        const cleanHistory = () => {
+            return history.length > 5
+                ? (history = [history[history.length - 1]])
+                : history;
+        };
+
+        // dugesia needs to sleep for a little while
+        // it returns a random number of seconds which Dugesia needs to sleep during its lifetime, it could be a very sleepy Dugesia, or a Very active one.
+        const calculateRestingTime = () =>
+            Math.floor(Math.random() * Math.floor(30));
+
         const move = () => {
-          let currentPosition = point.offsetLeft;
-          let nextMovementRight = currentPosition + PACE;
-          let nextMovementLeft = currentPosition - PACE;
+            let currentPositionX = point.offsetLeft;
+            let currentPositionY = point.offsetTop;
 
-          // handle dugesias axis orientation
-          const setOrientation = () => {
-            //Well take 0 as the default movement to the right and up
-            //And 1 to be left and down
-            const randomOrientation = Math.floor(Math.random() * Math.floor(2));
+            let nextMovementRight = currentPositionX + PACE;
+            let nextMovementLeft = currentPositionX - PACE;
+            let nextMovementUp = currentPositionY - PACE;
+            let nextMovementDown = currentPositionY + PACE;
 
-            randomOrientation === 0 ? (DIRECTION = "right") : (DIRECTION = "left");
-          };
+            // handle dugesias axis orientation
+            const setOrientation = () => {
+                const randomOrientation = Math.floor(
+                    Math.random() * Math.floor(4)
+                );
 
-          const moveRight = () => {
-            //if next movement is out of rightboundaries
-            if (nextMovementRight > WINDOW_WIDTH) {
-              point.style.left = `${WINDOW_WIDTH}px`;
-              return (DIRECTION = "left");
+                randomOrientation === 0
+                    ? (DIRECTION = 'right')
+                    : (DIRECTION = 'left');
+                switch (randomOrientation) {
+                    case 0:
+                        DIRECTION = 'right';
+                        break;
+                    case 1:
+                        DIRECTION = 'left';
+                        break;
+                    case 2:
+                        DIRECTION = 'up';
+                        break;
+                    case 3:
+                        DIRECTION = 'down';
+                        break;
+                }
+                history.push(DIRECTION);
+            };
+
+            const moveRight = () => {
+                //if next movement is out of right boundaries
+                if (nextMovementRight > WINDOW_WIDTH) {
+                    point.style.left = `${WINDOW_WIDTH}px`;
+                    return (DIRECTION = 'left');
+                }
+                return (point.style.left = `${nextMovementRight}px`);
+            };
+
+            const moveLeft = () => {
+                const beginningPoint = '10px';
+                //if next movement is out of left boundaries
+                if (nextMovementLeft < 0) {
+                    point.style.left = beginningPoint;
+                    return (DIRECTION = 'right');
+                }
+                return (point.style.left = `${nextMovementLeft}px`);
+            };
+
+            const moveUp = () => {
+                const beginningPoint = '0px';
+                //if next movement is out of top boundaries
+                if (nextMovementUp < 0) {
+                    point.style.top = beginningPoint;
+                    return (DIRECTION = 'down');
+                }
+                return (point.style.top = `${nextMovementUp}px`);
+            };
+
+            const moveDown = () => {
+                //if next movement is out of bottom boundaries
+                if (nextMovementDown > WINDOW_HEIGHT) {
+                    point.style.top = `${WINDOW_HEIGHT}px`;
+                    return (DIRECTION = 'up');
+                }
+                return (point.style.top = `${nextMovementDown}px`);
+            };
+
+            //Decide whether dugesia should move or be still.
+            if (ENERGY >= EFFORT && !isTired) {
+                setOrientation();
+                // Sanitize history....
+                cleanHistory();
+
+                ENERGY -= EFFORT;
+                if (DIRECTION === 'right') {
+                    moveRight();
+                } else if (DIRECTION === 'left') {
+                    moveLeft();
+                } else if (DIRECTION === 'up') {
+                    moveUp();
+                } else if (DIRECTION === 'down') {
+                    moveDown();
+                }
+            } else {
+                isTired = true;
+                ENERGY += 1;
+                // Dugesia needs a period to rest before can feel recovered...
+                if (ENERGY === restingTime) isTired = false;
             }
-            return (point.style.left = `${nextMovementRight}px`);
-          };
+        };
 
-          const moveLeft = () => {
-            const beginningPoint = "10px";
-            //if next movement is out of left boundaries
-            if (nextMovementLeft < 0) {
-              point.style.left = beginningPoint;
-              return (DIRECTION = "right");
+        const startFoodSystem = () => {
+            const randomizeEnvironment = Math.floor(
+                Math.random() * Math.floor(3)
+            );
+
+            createFoodElement = () => {
+                // Spawn bit of food...
+                // Select Board to spawn the food inside.
+                const board = document.getElementsByClassName('board');
+                // Create a node for food container.
+                const food = document.createElement('div');
+                food.innerHTML = 'x';
+                board[0].appendChild(food);
+                food.className = 'food';
+
+                food.style.left =
+                    Math.floor(Math.random() * Math.floor(WINDOW_WIDTH)) + 'px';
+                food.style.top =
+                    Math.floor(Math.random() * Math.floor(WINDOW_HEIGHT)) +
+                    'px';
+            };
+
+            // Create food depending on environmental conditions.
+            for (x = 0; x < ENV_CONDITIONS[randomizeEnvironment]; x++) {
+                createFoodElement();
             }
-            return (point.style.left = `${nextMovementLeft}px`);
-          };
-
-    // Keep working on making dugesia rest / tired
-          // const isTired = MOVEMENT_COUNT > 5;
-          // const isRested = ENERGY === ENERGY * 2;
-
-          // const rest = () => {
-          //   if (isTired) {
-          //     MOVEMENT_COUNT -= 1;
-          //   }
-          //   ENERGY += 1;
-          // };
-
-          //Decide whether dugesia should move or still
-          if (ENERGY >= EFFORT && !isTired) {
-            setOrientation();
-            if (DIRECTION === "right") {
-              moveRight();
-            } else if (DIRECTION === "left") {
-              moveLeft();
-            }
-            return (ENERGY -= EFFORT);
-          } else {
-            ENERGY += 1;
-          }
         };
 
         // start dugesia
+        restingTime = calculateRestingTime();
         setInterval(move, 1000);
-  </script>
+        startFoodSystem();
+    </script>
 </html>
